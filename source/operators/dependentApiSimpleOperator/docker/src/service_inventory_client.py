@@ -53,13 +53,16 @@ class ServiceInventoryAPI:
         url = f"{self.endpoint}/service"
         header = {"accept": "application/json", "Content-Type": "application/json"}
         response = requests.post(url, json=payload_dict, headers=header)
+        print(f"***response: {response} | Función: create_service")
         if response.status_code != 201:
+            print(f"***ERROR en la invocación de crear servicio: {str(response)} | Función: create_service")
             raise ValueError(
                 f"Unexpected http status code {response.status_code} - {response.content.decode()}"
             )
 
         svc = json.loads(response.content)
         result = self._shorten(svc)
+        print(f"***result: {result} | Función: create_service")
         return result
 
     def list_services(self, component_name=None, dependency_name=None, state="active"):
@@ -68,7 +71,7 @@ class ServiceInventoryAPI:
           'http://localhost:8638/service' \
           -H 'accept: application/json'
         """
-
+        print(f"***Ingresa a función list_services: {component_name} | Función: list_services")
         url = f"{self.endpoint}/service"
         header = {"accept": "application/json"}
         params = {}

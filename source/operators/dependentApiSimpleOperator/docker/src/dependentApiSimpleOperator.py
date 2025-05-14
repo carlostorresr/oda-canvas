@@ -108,6 +108,7 @@ def get_expapi(logw: LogWrapper):
 @logwrapper
 def get_depapi_url(logw: LogWrapper, depapi_name, depapi_namespace):
     dep_api = get_depapi_spec(logw, depapi_name, depapi_namespace)
+    print(f"***variable dep_api:: {str(dep_api)} | Función: get_depapi_url***")
     depapi_specification = dep_api["specification"]
     exp_apis = get_expapi()
     for exp_api in exp_apis["items"]:
@@ -151,14 +152,18 @@ async def dependentApiCreate(
     logw.debugInfo(f"Create/Update  called with for name {name}.{namespace}", body)
 
     # Dummy implementation set dummy url and ready status
+    print(f"***Calling function implementationReady :: {str(body)}***")
     if not implementationReady(body):  # avoid recursion
+        print(f"***Ingresando if implementationReady | Función: dependentApiCreate***")
         url = get_depapi_url(logw, name, namespace)
+        print(f"***variable url:: {str(url)} | Función: dependentApiCreate***")
         if url != None:
             setDependentAPIStatus(logw, namespace, name, url)
 
 
 @logwrapper
 def removeServiceInventory(logw: LogWrapper, svc_id):
+    print(f"Inicio de función removeServiceInventory: {svc_id}")
     svc_info = cavas_info_instance()
     ok = svc_info.delete_service(svc_id, ignore_not_found=True)
     if ok:
@@ -195,12 +200,15 @@ def cavas_info_instance() -> ServiceInventoryAPI:
 def updateServiceInventory(
     logw: LogWrapper, component_name, dependency_name, specification, url
 ):
+    print(f'***Inicio de función updateServiceInventory: {component_name} {dependency_name} {specification} {url}***')
     svc_info = cavas_info_instance()
     svcs = svc_info.list_services(
         component_name=component_name, dependency_name=dependency_name, state=None
     )
+    print(f'***variable svcs:: {str(svcs)} | Función: updateServiceInventory***')
     assert len(svcs) <= 1
     if len(svcs) == 0:
+        print(f'***Creando nuevo servicio en ServiceInventory: {component_name} {dependency_name} {specification} {url} | Función: updateServiceInventory***')
         svc = svc_info.create_service(
             componentName=component_name,
             dependencyName=dependency_name,
@@ -210,6 +218,7 @@ def updateServiceInventory(
         )
         logw.debugInfo(f'ServiceInventory created {svc["id"]}', svc)
     else:
+        print(f'***Actualizando servicio en ServiceInventory: {component_name} {dependency_name} {specification} {url} | Función: updateServiceInventory***')
         svc = svc_info.update_service(
             id=svcs[0]["id"],
             componentName=component_name,
@@ -251,6 +260,7 @@ def setDependentAPIStatus(logw: LogWrapper, namespace, name, url):
             raise kopf.TemporaryError(
                 f"setDependentAPIStatus: Exception in get_namespaced_custom_object: {e.body}"
             )
+    print(f"***variable depapi:: {str(depapi)} | Función: setDependentAPIStatus***")
     da_name = depapi["spec"]["name"]
     if not ("status" in depapi.keys()):
         depapi["status"] = {}
@@ -264,6 +274,7 @@ def setDependentAPIStatus(logw: LogWrapper, namespace, name, url):
             None, depapi, "metadata", "labels", "oda.tmforum.org/componentName"
         )
         specification = safe_get(None, depapi, "spec", "specification")
+        print(f"***variables para updateServiceInventory:: component_name: {component_name} da_name: {da_name} specification: {str(specification)} url: {url} | Función: setDependentAPIStatus***")
         svc_id = updateServiceInventory(
             logw, component_name, da_name, specification, url
         )

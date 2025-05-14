@@ -1,4 +1,4 @@
-image: tmforumodacanvas/dependentapi-simple-operator
+image: 000854842318.dkr.ecr.us-east-1.amazonaws.com/dependentapi-operator
 version: 1.0.0
 prereleaseSuffix:
 imagePullPolicy: IfNotPresent
